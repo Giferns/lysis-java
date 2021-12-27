@@ -57,7 +57,7 @@ public class AbstractStack {
 
 	private StackEntry popEntry() throws UnbalancedStackException {
 		if (stack_.size() == 0)
-			throw new UnbalancedStackException();
+			return null;
 
 		StackEntry e = stack_.get(stack_.size() - 1);
 		stack_.remove(stack_.size() - 1);
@@ -83,9 +83,13 @@ public class AbstractStack {
 	}
 
 	public DNode popValue() throws UnbalancedStackException {
-		DNode value = stack_.get(stack_.size() - 1).assignment;
-		pop();
-		return value;
+		if (stack_.size() > 0)
+		{
+			DNode value = stack_.get(stack_.size() - 1).assignment;
+			pop();
+			return value;
+		}
+		return null;
 	}
 
 	public DNode peekName() {
@@ -97,11 +101,10 @@ public class AbstractStack {
 		if (offset < 0)
 			return stack_.get((int) ((-offset / 4) - 1));
 
-		int argidx = (int) ((offset - 12) / 4);
-		if (argidx < 0 || argidx >= args_.length)
+		if ((int) ((offset - 12) / 4) >= args_.length)
 			return new StackEntry(null, null);
 
-		return args_[argidx];
+		return args_[(int) ((offset - 12) / 4)];
 	}
 
 	public DNode getName(long offset) {

@@ -346,9 +346,12 @@ public class BlockAnalysis {
 				if (stack_levels_[block.id()] == 0)
 					stack_levels_[block.id()] = stack_levels_[pred.id()];
 			}
-
+			if (block.instructions() == null)
+				return null;
 			Long lastConstant = null;
 			for (LInstruction ins : block.instructions()) {
+				if (ins == null)
+					break;
 				switch (ins.op()) {
 				case Stack: {
 					LStack stk = (LStack) ins;
@@ -392,10 +395,13 @@ public class BlockAnalysis {
 				case Call:
 				case SysReq: {
 					assert (lastConstant != null);
-					if (file_.PassArgCountAsSize())
-						lastConstant /= 4;
-					stack_levels_[block.id()] -= lastConstant;
-					stack_levels_[block.id()]--;
+					if (lastConstant != null)
+					{
+						if (file_.PassArgCountAsSize())
+							lastConstant /= 4;
+						stack_levels_[block.id()] -= lastConstant;
+						stack_levels_[block.id()]--;
+					}
 					break;
 				}
 				case GenArray: {

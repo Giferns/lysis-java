@@ -54,6 +54,10 @@ public class SourceStructureBuilder {
 			return true;
 
 		// Hack... sniff out the case we care about, the true target
+		if (trueTarget.lir().instructions() == null)
+		{
+			return false;
+		}
 		// probably having a conditional.
 		if (trueTarget.lir().instructions().length == 2 && trueTarget.lir().instructions()[0].op() == Opcode.Constant
 				&& trueTarget.lir().instructions()[1].op() == Opcode.Jump) {
@@ -67,6 +71,10 @@ public class SourceStructureBuilder {
 
 	private static LogicOperator ToLogicOp(DJumpCondition jcc) {
 		NodeBlock trueTarget = BlockAnalysis.ConstantSettingTarget(jcc.trueTarget());
+		if (trueTarget == null)
+		{
+			return LogicOperator.And;
+		}
 		boolean targetIsTruthy;
 		LConstant constant = (LConstant) trueTarget.lir().instructions()[0];
 		targetIsTruthy = (constant.val() == 1);
@@ -164,6 +172,12 @@ public class SourceStructureBuilder {
 				// This is a single block body of a loop. The logic chains ends here.
 				if (condBlock.nodes().last().type() == NodeType.Jump && condBlock.lir().loop() != null
 						&& BlockAnalysis.GetSingleTarget(condBlock).lir() == condBlock.lir().loop()) {
+					retValue.set(1, chain);
+					return retValue;
+				}
+				
+				if (!(condBlock.nodes().last() instanceof DJumpCondition))
+				{
 					retValue.set(1, chain);
 					return retValue;
 				}

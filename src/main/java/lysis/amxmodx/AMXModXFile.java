@@ -473,7 +473,7 @@ public class AMXModXFile extends PawnFile {
 		int argOffset = 12 + 4 * argNum;
 
 		Variable var = lookupVariable(func.address(), argOffset);
-		if (var == null)
+		if (var == null || var.tag() == null)
 			return null;
 
 		// Add string tag to possible string arguments.

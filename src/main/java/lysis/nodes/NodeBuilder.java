@@ -24,7 +24,6 @@ import lysis.instructions.LIncGlobal;
 import lysis.instructions.LIncLocal;
 import lysis.instructions.LIncReg;
 import lysis.instructions.LIndexAddress;
-import lysis.instructions.LInitArray;
 import lysis.instructions.LInstruction;
 import lysis.instructions.LJump;
 import lysis.instructions.LJumpCondition;
@@ -58,7 +57,6 @@ import lysis.instructions.LSysReq;
 import lysis.instructions.LUnary;
 import lysis.instructions.LZeroGlobal;
 import lysis.instructions.LZeroLocal;
-import lysis.instructions.Opcode;
 import lysis.lstructure.Function;
 import lysis.lstructure.LBlock;
 import lysis.lstructure.LGraph;
@@ -95,6 +93,7 @@ public class NodeBuilder {
 	PawnFile file_;
 	private LGraph graph_;
 	private NodeBlock[] blocks_;
+	public int countcount = 1020;
 
 	public NodeBuilder(PawnFile file, LGraph graph) {
 		file_ = file;
@@ -103,8 +102,13 @@ public class NodeBuilder {
 		for (int i = 0; i < graph_.blocks.length; i++)
 			blocks_[i] = new NodeBlock(graph_.blocks[i]);
 	}
+	
+	
 
 	public void traverse(NodeBlock block) throws Exception {
+		countcount--;
+		if (countcount <= 0)
+			return ;
 		for (int i = 0; i < block.lir().numPredecessors(); i++) {
 			NodeBlock pred = blocks_[block.lir().getPredecessor(i).id()];
 
@@ -114,12 +118,18 @@ public class NodeBuilder {
 
 			block.inherit(graph_, pred);
 		}
+		
+		if (block.lir() == null || block.lir().instructions() == null)
+			return ;
 
 		for (LInstruction uins : block.lir().instructions()) {
 			// Attempt to find static declarations. This is really
 			// expensive - we could cheapen it by creating per-method
 			// lists of statics.
-			if (uins.op() != Opcode.Goto) {
+			if (uins == null)
+				break;
+			else
+			{
 				int i = -1;
 				do {
 					StupidWrapper iStupid = new StupidWrapper(i);
@@ -338,6 +348,10 @@ public class NodeBuilder {
 			case SysReq: {
 				LSysReq sysreq = (LSysReq) uins;
 				DConstant ins = (DConstant) block.stack().popValue();
+				if (ins == null)
+				{
+					break;
+				}
 				long argslength = ins.value();
 				if (file_.PassArgCountAsSize())
 					argslength /= 4;
@@ -714,13 +728,6 @@ public class NodeBuilder {
 				block.add(genarray_);
 				break;
 			}
-			
-			case InitArray: {
-				LInitArray ins = (LInitArray) uins;
-				// TODO: Handle array initialization.
-				// TODO: Infer array dimensions based on referenced indirection vector.
-				break;
-			}
 
 			case StackAdjust: {
 				LStackAdjust ins = (LStackAdjust) uins;
@@ -799,13 +806,14 @@ public class NodeBuilder {
 
 		for (int i = 0; i < block.lir().idominated().length; i++) {
 			LBlock lir = block.lir().idominated()[i];
-			if (lir == null)
+			if (lir == null || block.lir().instructions() == null)
 				continue;
 			traverse(blocks_[lir.id()]);
 		}
 	}
 
 	public NodeBlock[] buildNodes() throws Exception {
+		countcount = 1020;
 		blocks_[0].inherit(graph_, null);
 		traverse(blocks_[0]);
 		return blocks_;

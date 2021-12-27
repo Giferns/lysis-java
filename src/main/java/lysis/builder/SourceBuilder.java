@@ -447,6 +447,10 @@ public class SourceBuilder {
 	}
 
 	private String buildStateChange(DStore store) throws Exception {
+		if (store.getOperand(0) == null)
+		{
+			return "state var";
+		}
 		if (store.getOperand(0).type() != NodeType.Global)
 			return null;
 
@@ -571,7 +575,7 @@ public class SourceBuilder {
 	}
 
 	private String buildCharacter(DCharacter node) {
-		String str = new Character(node.value()).toString();
+		String str = String.valueOf(node.value());
 		str = replaceChatColorCharacters(str);
 		return "'" + str + "'";
 	}
@@ -649,7 +653,7 @@ public class SourceBuilder {
 		}
 
 		default:
-			throw new Exception("Can't print expression: " + node.type());
+			return "(" + node.type() + ")";
 		}
 	}
 
@@ -740,7 +744,7 @@ public class SourceBuilder {
 
 	private void writeReturn(ReturnBlock block) throws Exception {
 		String operand;
-		if (block.chain() != null) {
+		if (block.chain() != null || !(block.source().nodes().last() instanceof DReturn)) {
 			operand = buildLogicChain(block.chain());
 		} else {
 			DReturn ret = (DReturn) block.source().nodes().last();
@@ -834,6 +838,10 @@ public class SourceBuilder {
 	}
 
 	private String buildLogicChain(LogicChain chain) throws Exception {
+		if (chain == null)
+		{
+			return "(void)";
+		}
 		String text = buildLogicExpr(chain.nodes().get(0));
 		for (int i = 1; i < chain.nodes().size(); i++) {
 			LogicChain.Node node = chain.nodes().get(i);

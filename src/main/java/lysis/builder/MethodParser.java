@@ -24,14 +24,11 @@ import lysis.instructions.LFill;
 import lysis.instructions.LGenArray;
 import lysis.instructions.LGoto;
 import lysis.instructions.LHeap;
-import lysis.instructions.LHeapRestore;
-import lysis.instructions.LHeapSave;
 import lysis.instructions.LIncGlobal;
 import lysis.instructions.LIncI;
 import lysis.instructions.LIncLocal;
 import lysis.instructions.LIncReg;
 import lysis.instructions.LIndexAddress;
-import lysis.instructions.LInitArray;
 import lysis.instructions.LInstruction;
 import lysis.instructions.LJump;
 import lysis.instructions.LJumpCondition;
@@ -398,8 +395,22 @@ public class MethodParser {
 			long prePeep = pc_;
 			SPOpcode nextOp = readOp();
 			int nextValue = readInt32();
+			
 			// Assert, that we really clear the stack from the arguments after this.
-			long argSize = ((LPushConstant) lir_.instructions.get(lir_.instructions.size() - 1)).val();
+			
+			long argSize = 0;
+			
+			LInstruction ins = lir_.instructions.get(lir_.instructions.size() - 1);
+			
+			if (!(ins instanceof LPushConstant))
+			{
+				argSize = 0;
+			}
+			else 
+			{
+				argSize = ((LPushConstant)ins).val();
+			}
+			
 			if (!file_.PassArgCountAsSize())
 				argSize *= 4;
 			argSize += 4;
@@ -418,6 +429,9 @@ public class MethodParser {
 
 		case dbreak:
 			return new LDebugBreak();
+
+		case endproc:
+			return null;
 
 		case push2_s: {
 			add(new LPushLocal(trackStack(readInt32())));
@@ -616,20 +630,6 @@ public class MethodParser {
 			assert (value <= 0);
 			return new LStackAdjust(value);
 		}
-		
-		case heap_save: {
-			return new LHeapSave();
-		}
-		
-		case heap_restore: {
-			return new LHeapRestore();
-		}
-		
-		case initarray_pri:
-		case initarray_alt: {
-			Register reg = (op == SPOpcode.initarray_pri) ? Register.Pri : Register.Alt;
-			return new LInitArray(reg, readInt32(), readInt32(), readInt32(), readInt32(), readInt32());
-		}
 
 		case nop: {
 			return new LDebugBreak();
@@ -661,11 +661,26 @@ public class MethodParser {
 		if (need_proc_ && readOp() != SPOpcode.proc)
 			throw new Exception("invalid method, first op must be PROC");
 
+		boolean opskip = false;
 		while (pc_ < (long) file_.code().bytes().length) {
 			current_pc_ = pc_;
 			SPOpcode op = readOp();
-			if (op == SPOpcode.proc || op == SPOpcode.endproc)
+			if (op == SPOpcode.stack)
+			{
+				opskip = true;
+			}
+			if (op == SPOpcode.proc && opskip)
+			{
+				//add(readInstruction(op));
+				continue;
+			}
+			else if (op == SPOpcode.proc || op == SPOpcode.align_pri)
 				break;
+			
+			if (op != SPOpcode.stack)
+			{
+				opskip = false;
+			}
 			add(readInstruction(op));
 		}
 
