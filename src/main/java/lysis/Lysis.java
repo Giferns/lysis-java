@@ -21,6 +21,15 @@ import lysis.nodes.NodeRewriter;
 import lysis.types.BackwardTypePropagation;
 import lysis.types.ForwardTypePropagation;
 
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import java.io.File;
+ 
+import java.lang.Thread;
+
+
 public class Lysis {
 
 	public static void PreprocessMethod(PawnFile file, Function func) throws Exception {
@@ -145,13 +154,35 @@ public class Lysis {
 			System.err.println("usage: <file.smx> or <file.amxx>");
 			return;
 		}
-
+		
+		TimerTask task = new TimerTask() {
+			public void run() {
+				System.out.println("//Decompile end at: " + new Date());
+				System.exit(0);
+			}
+		};
+		Timer timer = new Timer("Timer");
+		
+		long delay = 15000L;
+		timer.schedule(task, delay);
+		
+		
 		PrintStream sysout;
 		try {
 			sysout = new PrintStream(System.out, true, "UTF-8");
 			System.setOut(sysout);
 		} catch (UnsupportedEncodingException e2) {
 			e2.printStackTrace();
+		}
+		
+		if (args.length > 1)
+		{
+			try {
+				sysout = new PrintStream(new File(args[1]));
+				System.setOut(sysout);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		}
 
 		String path = args[0];
