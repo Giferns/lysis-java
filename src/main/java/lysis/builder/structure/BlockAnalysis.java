@@ -348,7 +348,7 @@ public class BlockAnalysis {
 			}
 			if (block.instructions() == null)
 				return null;
-			Long lastConstant = null;
+			Long lastConstant = 0L;
 			for (LInstruction ins : block.instructions()) {
 				if (ins == null)
 					break;
@@ -418,7 +418,6 @@ public class BlockAnalysis {
 					break;
 				}
 
-				lastConstant = null;
 				if (stack_levels_[block.id()] < 0)
 					return block;
 			}

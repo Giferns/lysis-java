@@ -105,11 +105,21 @@ public class MethodParser {
 	private boolean need_proc_;
 
 	private int readInt32() {
+		if (pc_ + 4 >= file_.code().bytes().length)
+		{
+			pc_ += 4;
+			return 0;
+		}
 		pc_ += 4;
 		return BitConverter.ToInt32(file_.code().bytes(), (int) pc_ - 4);
 	}
 
 	private long readUInt32() {
+		if (pc_ + 4 >= file_.code().bytes().length)
+		{
+			pc_ += 4;
+			return 0;
+		}
 		pc_ += 4;
 		return BitConverter.ToUInt32(file_.code().bytes(), (int) pc_ - 4);
 	}
@@ -651,7 +661,8 @@ public class MethodParser {
 		}
 
 		default:
-			throw new Exception("Unrecognized opcode: " + op);
+			readInt32();
+			return new LDebugBreak();
 		}
 	}
 

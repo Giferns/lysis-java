@@ -772,7 +772,11 @@ public class NodeBuilder {
 				assert (ins.ctrlregindex() == 4); // STK = PRI
 				DNode pri = block.stack().pri();
 				assert (pri.type() == NodeType.Binary);
-
+				if (pri.type() == NodeType.Constant)
+				{
+					block.add(new DLabel(ins.pc()));
+					break;
+				}
 				DBinary add = (DBinary) pri;
 				assert (add.lhs().type() == NodeType.Constant && add.rhs().type() == NodeType.Constant);
 				DConstant frm = (DConstant) add.lhs();
