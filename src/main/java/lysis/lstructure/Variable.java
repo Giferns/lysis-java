@@ -83,7 +83,14 @@ public class Variable {
 
 	public void setTag(Tag tag) {
 		tag_ = tag;
-		tag_id_ = tag.tag_id();
+		if (tag == null)
+		{
+			tag_id_ = 0;
+		}
+		else
+		{
+			tag_id_ = tag.tag_id();
+		}
 	}
 
 	public void setTagId(long tag_id) {

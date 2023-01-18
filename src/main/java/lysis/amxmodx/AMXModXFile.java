@@ -259,9 +259,6 @@ public class AMXModXFile extends PawnFile {
 			dbg.automatons = r.ReadInt16();
 			dbg.states = r.ReadInt16();
 
-			if (dbg.magic != AMX_DBG_MAGIC)
-				throw new Exception("unrecognized debug magic");
-
 			r = new ExtendedDataInputStream(
 					new ByteArrayInputStream(binary, amx.hea + AMX_DEBUG_HDR.SIZE, dbg.size - AMX_DEBUG_HDR.SIZE));
 
@@ -588,8 +585,8 @@ public class AMXModXFile extends PawnFile {
 
 	private Tag findTag(long tag_id, Variable var) {
 		Tag tag = findTag(tag_id);
-
-		if (!"_".equals(tag.name()))
+		
+		if (tag != null && !"_".equals(tag.name()))
 			return tag;
 
 		Tag maybe = findTagString(var);
@@ -613,15 +610,13 @@ public class AMXModXFile extends PawnFile {
 			boolean isPastVar = false;
 			long size = 0;
 			for (int i = 0; i < allvars_.length; i++) {
-				if (allvars_[i] == var) {
-					isPastVar = true;
-					continue;
-				}
-				
 				// Find the next global/static variable
 				if (isPastVar && allvars_[i].scope() != Scope.Local) {
 					size = allvars_[i].address() - var.address();
 					break;
+				}
+				if (allvars_[i] == var) {
+					isPastVar = true;
 				}
 			}
 

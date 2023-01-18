@@ -42,7 +42,7 @@ public class NodeAnalysis {
 	private static void RemoveDeadCodeInBlock(NodeBlock block) throws Exception {
 		for (NodeList.reverse_iterator iter = block.nodes().rbegin(); iter.more();) {
 			if (iter.node().type() == NodeType.DeclareLocal) {
-				DDeclareLocal decl = (DDeclareLocal) iter.node();
+				DDeclareLocal decl = (DDeclareLocal)iter.node();
 				if (decl.var() == null
 						&& (decl.uses().size() == 0 || (decl.uses().size() == 1 && decl.value() != null))) {
 					// This was probably just a stack temporary.
@@ -60,7 +60,7 @@ public class NodeAnalysis {
 						} else
 							use.node().replaceOperand(use.index(), decl.value());
 					}
-					iter.node().removeFromUseChains();
+					//iter.node().removeFromUseChains();
 					block.nodes().remove(iter);
 					continue;
 				}
@@ -68,7 +68,7 @@ public class NodeAnalysis {
 
 			if ((iter.node().type() == NodeType.Store && iter.node().getOperand(0).type() == NodeType.Heap
 					&& iter.node().getOperand(0).uses().size() == 1)) {
-				iter.node().removeFromUseChains();
+				//iter.node().removeFromUseChains();
 				block.nodes().remove(iter);
 			}
 

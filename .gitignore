@@ -6,3 +6,6 @@
 /bin/
 /.gradle/
 /build/
+amxxasm.exe
+*.hprof
+decompile.bat
