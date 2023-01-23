@@ -371,46 +371,48 @@ public class NodeAnalysis {
 			DStore store = (DStore) riter.node();
 
 			DNode coalesce = null;
-			if (store.rhs().type() == NodeType.Binary) {
-				DBinary rhs = (DBinary) store.rhs();
-				if (rhs.lhs().type() == NodeType.Load) {
-					DLoad load = (DLoad) rhs.lhs();
-					if (load.from() == store.lhs()) {
-						coalesce = rhs.rhs();
-					} else if (load.from().type() == NodeType.ArrayRef && store.lhs().type() == NodeType.Load) {
-						DArrayRef aref = (DArrayRef) load.from();
-						load = (DLoad) store.lhs();
-						if (aref.abase() == load && aref.index().type() == NodeType.Constant
-								&& ((DConstant) aref.index()).value() == 0) {
+			if (store.rhs() != null)
+			{
+				if (store.rhs().type() == NodeType.Binary) {
+					DBinary rhs = (DBinary) store.rhs();
+					if (rhs.lhs().type() == NodeType.Load) {
+						DLoad load = (DLoad) rhs.lhs();
+						if (load.from() == store.lhs()) {
 							coalesce = rhs.rhs();
-							store.replaceOperand(0, aref);
+						} else if (load.from().type() == NodeType.ArrayRef && store.lhs().type() == NodeType.Load) {
+							DArrayRef aref = (DArrayRef) load.from();
+							load = (DLoad) store.lhs();
+							if (aref.abase() == load && aref.index().type() == NodeType.Constant
+									&& ((DConstant) aref.index()).value() == 0) {
+								coalesce = rhs.rhs();
+								store.replaceOperand(0, aref);
+							}
 						}
 					}
-				}
-				if (coalesce != null)
-					store.makeStoreOp(rhs.spop());
-			} else if (store.rhs().type() == NodeType.Load && store.rhs().getOperand(0) == store.lhs()) {
-				// AWFUL PATTERN MATCHING AHEAD.
-				// This *looks* like a dead store, but there is probably
-				// something in between the load and store that changes
-				// the reference. We assume this has to be an incdec.
-				if (store.prev().type() == NodeType.IncDec && store.prev().getOperand(0) == store.rhs()) {
-					// This detects a weird case in ucp.smx:
-					// v0 = ArrayRef
-					// v1 = Load(v0)
-					// -- Dec(v1)
-					// -- Store(v0, v1)
-					// This appears to be:
-					// *ref = (--*ref)
-					// But, this should suffice:
-					// --*ref
-					store.removeFromUseChains();
-					block.nodes().remove(riter);
-					assert (riter.node().type() == NodeType.IncDec);
-					riter.node().replaceOperand(0, riter.node().getOperand(0).getOperand(0));
+					if (coalesce != null)
+						store.makeStoreOp(rhs.spop());
+				} else if (store.rhs().type() == NodeType.Load && store.rhs().getOperand(0) == store.lhs()) {
+					// AWFUL PATTERN MATCHING AHEAD.
+					// This *looks* like a dead store, but there is probably
+					// something in between the load and store that changes
+					// the reference. We assume this has to be an incdec.
+					if (store.prev().type() == NodeType.IncDec && store.prev().getOperand(0) == store.rhs()) {
+						// This detects a weird case in ucp.smx:
+						// v0 = ArrayRef
+						// v1 = Load(v0)
+						// -- Dec(v1)
+						// -- Store(v0, v1)
+						// This appears to be:
+						// *ref = (--*ref)
+						// But, this should suffice:
+						// --*ref
+						store.removeFromUseChains();
+						block.nodes().remove(riter);
+						assert (riter.node().type() == NodeType.IncDec);
+						riter.node().replaceOperand(0, riter.node().getOperand(0).getOperand(0));
+					}
 				}
 			}
-
 			if (coalesce != null)
 				store.replaceOperand(1, coalesce);
 		}

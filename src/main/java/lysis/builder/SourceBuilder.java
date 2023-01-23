@@ -585,6 +585,11 @@ public class SourceBuilder {
 	}
 
 	private String buildExpression(DNode node) throws Exception {
+		if (node == null)
+		{
+			return "0";
+		}
+		
 		switch (node.type()) {
 		case Constant:
 			return buildConstant((DConstant) node);

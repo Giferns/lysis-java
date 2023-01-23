@@ -236,7 +236,7 @@ public class ForwardTypePropagation extends NodeVisitor {
 		// Make sure a constant float is assigned the right type.
 		// new Float:x;
 		// x = 12.0; // 12.0 instead of 1094713344!
-		if (store.getOperand(0).typeSet().numTypes() == 1 && store.getOperand(1).type() == NodeType.Constant) {
+		if (store.getOperand(0).typeSet().numTypes() == 1 && store.getOperand(1) != null && store.getOperand(1).type() == NodeType.Constant) {
 			TypeUnit tu = store.getOperand(0).typeSet().types(0);
 			if (tu.kind() == Kind.Cell)
 				store.getOperand(1).addType(new TypeUnit(new PawnType(tu.type().type())));
