@@ -24,6 +24,7 @@ import lysis.instructions.LIncGlobal;
 import lysis.instructions.LIncLocal;
 import lysis.instructions.LIncReg;
 import lysis.instructions.LIndexAddress;
+import lysis.instructions.LInitArray;
 import lysis.instructions.LInstruction;
 import lysis.instructions.LJump;
 import lysis.instructions.LJumpCondition;
@@ -57,6 +58,7 @@ import lysis.instructions.LSysReq;
 import lysis.instructions.LUnary;
 import lysis.instructions.LZeroGlobal;
 import lysis.instructions.LZeroLocal;
+import lysis.instructions.Opcode;
 import lysis.lstructure.Function;
 import lysis.lstructure.LBlock;
 import lysis.lstructure.LGraph;
@@ -127,8 +129,10 @@ public class NodeBuilder {
 			// expensive - we could cheapen it by creating per-method
 			// lists of statics.
 			if (uins == null)
-				break;
-			else
+			{
+								break;
+			}
+			else if (uins.op() != Opcode.Goto)
 			{
 				int i = -1;
 				do {
@@ -348,11 +352,11 @@ public class NodeBuilder {
 			case SysReq: {
 				LSysReq sysreq = (LSysReq) uins;
 				DConstant ins = (DConstant) block.stack().popValue();
-				if (ins == null)
+				long argslength = 0;
+				if (ins != null)
 				{
-					break;
+					argslength = ins.value();
 				}
-				long argslength = ins.value();
 				if (file_.PassArgCountAsSize())
 					argslength /= 4;
 
@@ -728,6 +732,13 @@ public class NodeBuilder {
 				block.add(genarray_);
 				break;
 			}
+			
+			case InitArray: {
+				LInitArray ins = (LInitArray) uins;
+				// TODO: Handle array initialization.
+				// TODO: Infer array dimensions based on referenced indirection vector.
+				break;
+			}
 
 			case StackAdjust: {
 				LStackAdjust ins = (LStackAdjust) uins;
@@ -810,7 +821,7 @@ public class NodeBuilder {
 
 		for (int i = 0; i < block.lir().idominated().length; i++) {
 			LBlock lir = block.lir().idominated()[i];
-			if (lir == null || block.lir().instructions() == null)
+			if (lir == null || lir.instructions() == null)
 				continue;
 			traverse(blocks_[lir.id()]);
 		}

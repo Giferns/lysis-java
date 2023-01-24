@@ -102,10 +102,10 @@ public class AMXModXFile extends PawnFile {
 	public AMXModXFile(byte[] binary) throws Exception {
 		ExtendedDataInputStream reader = new ExtendedDataInputStream(new ByteArrayInputStream(binary));
 		long magic = reader.ReadUInt32();
+		int amx_magic = reader.ReadUInt16();
 
 		if (magic == MAGIC2) {
-			int version = reader.ReadUInt16();
-			if (version > MAGIC2_VERSION)
+			if (amx_magic > MAGIC2_VERSION)
 				throw new Exception("unexpected version");
 
 			PluginHeader ph = null;
@@ -122,6 +122,7 @@ public class AMXModXFile extends PawnFile {
 					break;
 				}
 			}
+			
 			if (ph == null)
 				throw new Exception("could not find applicable cell size");
 
@@ -135,7 +136,7 @@ public class AMXModXFile extends PawnFile {
 				System.err.printf("uncompressed size mismatch, bad file? expected %d, got %d\n", ph.imagesize, read);
 
 			binary = bits;
-		} else {
+		} else if(amx_magic != AMX_MAGIC) {
 			throw new Exception("unrecognized file");
 		}
 
@@ -461,6 +462,20 @@ public class AMXModXFile extends PawnFile {
 					argNum++;
 				} while (true);
 				fun.setArguments(args);
+			}
+		// amxmod
+		} else if (amx.file_version == 7) {
+			int count = (amx.nametable - amx.tags) / DEFSIZE;
+			ExtendedDataInputStream r = new ExtendedDataInputStream(
+					new ByteArrayInputStream(binary, amx.tags, count * DEFSIZE));
+			tags_ = new Tag[count];
+			for (short i = 0; i < count; i++) {
+				long tag_id = r.ReadUInt32();
+				int nameoffset = r.ReadInt32();
+				String name = ReadName(binary, nameoffset);
+				tags_[i] = new Tag(name, tag_id);
+
+				// System.out.printf("%d: %s%n", i, tags_[i]);
 			}
 		}
 	}

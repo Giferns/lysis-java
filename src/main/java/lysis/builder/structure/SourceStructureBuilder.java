@@ -114,17 +114,28 @@ public class SourceStructureBuilder {
 		do {
 			do {
 				DJumpCondition childJcc = (DJumpCondition) exprBlock.nodes().last();
-				if (BlockAnalysis.EffectiveTarget(childJcc.trueTarget()) != earlyExit) {
+				if (BlockAnalysis.EffectiveTarget(childJcc.trueTarget()) != earlyExit) 
+				{
 					// Parse a sub-expression.
 					NodeBlock innerJoin = null;
 					LinkedList<Object> listRet = buildLogicChain(exprBlock, earlyExit, innerJoin);
 					LogicChain rhs = (LogicChain) listRet.get(1);
-					innerJoin = (NodeBlock) listRet.get(0);
-					AssertInnerJoinValidity(innerJoin, earlyExit);
-					chain.append(rhs);
-					exprBlock = innerJoin;
-					childJcc = (DJumpCondition) exprBlock.nodes().last();
-				} else {
+					
+					if ((listRet.get(0) instanceof NodeBlock))
+					{
+						innerJoin = (NodeBlock) listRet.get(0);
+						AssertInnerJoinValidity(innerJoin, earlyExit);
+						chain.append(rhs);
+						exprBlock = innerJoin;
+						childJcc = (DJumpCondition) exprBlock.nodes().last();
+					}
+					else 
+					{
+						chain.append(childJcc.getOperand(0));
+					}
+				}
+				else 
+				{
 					chain.append(childJcc.getOperand(0));
 				}
 				exprBlock = childJcc.falseTarget();
@@ -178,7 +189,7 @@ public class SourceStructureBuilder {
 				
 				if (!(condBlock.nodes().last() instanceof DJumpCondition))
 				{
-					retValue.set(1, chain);
+					retValue.set(0, chain);
 					return retValue;
 				}
 
@@ -284,6 +295,10 @@ public class SourceStructureBuilder {
 		NodeBlock join = null;
 		LinkedList<Object> listRet = buildLogicChain(block, null, join);
 		LogicChain chain = (LogicChain) listRet.get(1);
+		if (!(listRet.get(0) instanceof NodeBlock))
+		{
+			return new IfBlock(block, false, chain, null, null, null);
+		}
 		join = (NodeBlock) listRet.get(0);
 
 		// Complex if with no body. Someone wants to fool us?

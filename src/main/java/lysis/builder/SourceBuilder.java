@@ -373,7 +373,7 @@ public class SourceBuilder {
 				return local.var().name() + "[0]";
 			if (local.var().type() == VariableType.Reference)
 				return local.var().name();
-			throw new Exception("unknown local ref");
+			return "_unk";
 		}
 
 		case Global: {
@@ -417,6 +417,8 @@ public class SourceBuilder {
 	}
 
 	private String buildLoad(DLoad load) throws Exception {
+		if (load == null || load.getOperand(0) == null)
+			return "_unk";
 		return buildLoadStoreRef(load.getOperand(0));
 	}
 

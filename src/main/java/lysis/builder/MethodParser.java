@@ -24,11 +24,14 @@ import lysis.instructions.LFill;
 import lysis.instructions.LGenArray;
 import lysis.instructions.LGoto;
 import lysis.instructions.LHeap;
+import lysis.instructions.LHeapRestore;
+import lysis.instructions.LHeapSave;
 import lysis.instructions.LIncGlobal;
 import lysis.instructions.LIncI;
 import lysis.instructions.LIncLocal;
 import lysis.instructions.LIncReg;
 import lysis.instructions.LIndexAddress;
+import lysis.instructions.LInitArray;
 import lysis.instructions.LInstruction;
 import lysis.instructions.LJump;
 import lysis.instructions.LJumpCondition;
@@ -408,19 +411,14 @@ public class MethodParser {
 			
 			// Assert, that we really clear the stack from the arguments after this.
 			
-			long argSize = 0;
+			long argSize = 1;
 			
 			LInstruction ins = lir_.instructions.get(lir_.instructions.size() - 1);
 			
-			if (!(ins instanceof LPushConstant))
-			{
-				argSize = 0;
-			}
-			else 
+			if ((ins instanceof LPushConstant))
 			{
 				argSize = ((LPushConstant)ins).val();
 			}
-			
 			if (!file_.PassArgCountAsSize())
 				argSize *= 4;
 			argSize += 4;
@@ -640,6 +638,20 @@ public class MethodParser {
 			assert (value <= 0);
 			return new LStackAdjust(value);
 		}
+		
+		case heap_save: {
+			return new LHeapSave();
+		}
+		
+		case heap_restore: {
+			return new LHeapRestore();
+		}
+		
+		case initarray_pri:
+		case initarray_alt: {
+			Register reg = (op == SPOpcode.initarray_pri) ? Register.Pri : Register.Alt;
+			return new LInitArray(reg, readInt32(), readInt32(), readInt32(), readInt32(), readInt32());
+		}
 
 		case nop: {
 			return new LDebugBreak();
@@ -658,6 +670,22 @@ public class MethodParser {
 		case sctrl: {
 			int index = readInt32();
 			return new LStoreCtrl(index);
+		}
+
+		// AMXMod plugins seem to contain this.
+		case line: {
+			readUInt32(); // curline
+			readUInt32(); // curfile
+			return new LDebugBreak();
+		}
+
+		// AMXMod plugins possibly contain this, since they have `line` too.
+		// Maybe unused.
+		case file: {
+			long num = readUInt32();
+			readUInt32(); // curfile
+			pc_ += num - 4; // skip dbgname
+			return new LDebugBreak();
 		}
 
 		default:

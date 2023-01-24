@@ -7,7 +7,7 @@ import lysis.instructions.LInstruction;
 
 public class LBlock {
 	private long pc_;
-	private LInstruction[] instructions_ = new LInstruction[1];
+	private LInstruction[] instructions_ = new LInstruction[0];
 	private LinkedList<LBlock> predecessors_ = new LinkedList<LBlock>();
 	private boolean marked_ = false;
 	private int id_;
@@ -162,7 +162,7 @@ public class LBlock {
 	}
 
 	public LControlInstruction last() {
-		if (instructions() == null)
+		if (instructions() == null || instructions().length == 0)
 			return null;
 		return (LControlInstruction) instructions()[instructions().length - 1];
 	}

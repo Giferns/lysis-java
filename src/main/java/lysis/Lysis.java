@@ -157,7 +157,6 @@ public class Lysis {
 		
 		TimerTask task = new TimerTask() {
 			public void run() {
-				System.out.println("//Decompile end at: " + new Date());
 				System.exit(0);
 			}
 		};

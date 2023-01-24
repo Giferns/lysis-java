@@ -399,9 +399,9 @@ public class BlockAnalysis {
 					{
 						if (file_.PassArgCountAsSize())
 							lastConstant /= 4;
-						stack_levels_[block.id()] -= lastConstant;
-						stack_levels_[block.id()]--;
 					}
+					stack_levels_[block.id()] -= lastConstant;
+					stack_levels_[block.id()]--;
 					break;
 				}
 				case GenArray: {
@@ -418,6 +418,7 @@ public class BlockAnalysis {
 					break;
 				}
 
+				lastConstant = 0L;
 				if (stack_levels_[block.id()] < 0)
 					return block;
 			}
