@@ -750,14 +750,17 @@ public class SourceBuilder {
 	}
 
 	private void writeReturn(ReturnBlock block) throws Exception {
-		String operand;
+		String operand = "";
 		if (block.chain() != null || !(block.source().nodes().last() instanceof DReturn)) {
 			operand = buildLogicChain(block.chain());
 		} else {
 			DReturn ret = (DReturn) block.source().nodes().last();
 			operand = buildExpression(ret.getOperand(0));
 		}
-		outputLine("return " + operand + ";");
+		if (operand.length() == 0)
+			outputLine(";");
+		else 
+			outputLine("return " + operand + ";");
 	}
 
 	private void writeIncDec(DIncDec incdec) throws Exception {
@@ -847,7 +850,7 @@ public class SourceBuilder {
 	private String buildLogicChain(LogicChain chain) throws Exception {
 		if (chain == null)
 		{
-			return "(void)";
+			return "";
 		}
 		String text = buildLogicExpr(chain.nodes().get(0));
 		for (int i = 1; i < chain.nodes().size(); i++) {
