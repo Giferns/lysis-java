@@ -145,9 +145,16 @@ public class SourceStructureBuilder {
 				// We have reached the end of a sequence - a block containing
 				// a Constant and a Jump to the join point of the sequence.
 				assert (exprBlock.lir().instructions()[0].op() == Opcode.Constant);
-
+				
 				// The next block is the join point.
 				NodeBlock condBlock = SingleTarget(exprBlock);
+
+				if (condBlock.lir().instructions().length == 0)
+				{
+					retValue.set(0, chain);
+					retValue.set(1, chain);
+					return retValue;
+				}
 
 				retValue.set(0, condBlock);
 

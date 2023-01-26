@@ -26,6 +26,8 @@ import lysis.nodes.types.DJump;
 // This seems like a reasonable assumption as the language does not have
 // "goto", however I'm not familiar with the compiler enough to make a better assertion.
 public class BlockAnalysis {
+	private static int checkStack = 1000;
+	
 	// Return a reverse post-order listing of reachable blocks.
 	public static LBlock[] Order(LBlock entry) {
 		// Postorder traversal without recursion.
@@ -294,8 +296,13 @@ public class BlockAnalysis {
 
 	private static LBlock FindSkippingParent(LBlock[] blocks, int unbalanced_id, LBlock block) {
 		LBlock idomBlock = blocks[block.idom().id()];
+		checkStack--;
+		if (checkStack <= 0)
+		{
+			return null;
+		}
+		
 		LControlInstruction lastIns = idomBlock.last();
-
 		if (lastIns.op() == Opcode.JumpCondition) {
 			LJumpCondition jcc = (LJumpCondition) lastIns;
 			LBlock target;
@@ -323,6 +330,7 @@ public class BlockAnalysis {
 		LBlock idomBlock = blocks[unbalanced.idom().id()];
 		LControlInstruction lastIns = idomBlock.last();
 		assert (lastIns.op() == Opcode.JumpCondition);
+		checkStack = 1000;
 		return FindSkippingParent(blocks, unbalanced.id(), unbalanced);
 	}
 
