@@ -359,12 +359,14 @@ public class BackwardTypePropagation extends NodeVisitor {
 	}
 
 	public void visit(DStore store) {
-		store.getOperand(0).setUsedAsReference();
+		if (store.getOperand(0) != null)
+			store.getOperand(0).setUsedAsReference();
 	}
 
 	public void visit(DLoad load) throws Exception {
-		load.from().setUsedAsReference();
-		if (load.from().typeSet() != null && load.from().typeSet().numTypes() == 1) {
+		if (load.from() != null )
+			load.from().setUsedAsReference();
+		if (load.from() != null && load.from().typeSet() != null && load.from().typeSet().numTypes() == 1) {
 			TypeUnit tu = load.from().typeSet().types(0);
 			if (tu.kind() == TypeUnit.Kind.Array) {
 				if (load.from().type() == NodeType.ArrayRef) {

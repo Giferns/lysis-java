@@ -66,7 +66,7 @@ public class NodeAnalysis {
 				}
 			}
 
-			if ((iter.node().type() == NodeType.Store && iter.node().getOperand(0).type() == NodeType.Heap
+			if ((iter.node().type() == NodeType.Store && iter.node().getOperand(0) != null && iter.node().getOperand(0).type() == NodeType.Heap
 					&& iter.node().getOperand(0).uses().size() == 1)) {
 				//iter.node().removeFromUseChains();
 				block.nodes().remove(iter);
@@ -180,7 +180,7 @@ public class NodeAnalysis {
 			DNode node = iter.node();
 
 			if (node.type() == NodeType.Store || node.type() == NodeType.Load) {
-				if (node.getOperand(0).type() != NodeType.ArrayRef && IsArray(node.getOperand(0).typeSet())) {
+				if (node.getOperand(0) != null && node.getOperand(0).type() != NodeType.ArrayRef && IsArray(node.getOperand(0).typeSet())) {
 					DConstant index0 = new DConstant(0);
 					DArrayRef aref0 = new DArrayRef(node.getOperand(0), index0, 0);
 					block.nodes().insertBefore(node, index0);
