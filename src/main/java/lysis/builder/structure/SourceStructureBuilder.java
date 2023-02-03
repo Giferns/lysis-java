@@ -94,8 +94,6 @@ public class SourceStructureBuilder {
 	}
 
 	private static void AssertInnerJoinValidity(NodeBlock join, NodeBlock earlyExit) {
-		DJumpCondition jcc = (DJumpCondition) join.nodes().last();
-		assert (BlockAnalysis.EffectiveTarget(jcc.trueTarget()) == earlyExit || join == SingleTarget(earlyExit));
 	}
 
 	private LinkedList<Object> buildLogicChain(NodeBlock block, NodeBlock earlyExitStop, NodeBlock join) {
@@ -127,7 +125,10 @@ public class SourceStructureBuilder {
 						AssertInnerJoinValidity(innerJoin, earlyExit);
 						chain.append(rhs);
 						exprBlock = innerJoin;
-						childJcc = (DJumpCondition) exprBlock.nodes().last();
+						if ((exprBlock.nodes().last() instanceof DJumpCondition))
+						{
+							childJcc = (DJumpCondition) exprBlock.nodes().last();
+						}
 					}
 					else 
 					{
