@@ -10,7 +10,7 @@ amxxasm.exe
 *.hprof
 decompile.bat
 *.sma
-multilingual.amxx.txt
+*.amxx
 
 # Ignore Gradle project-specific cache directory
 .gradle

@@ -1,1 +1,1 @@
-"c:\Program Files\Java\jdk-19\bin\java.exe" -jar "c:\Projects\AMX_DECOMPILER\lysis-java\build\libs\lysis-java.jar" %1 %1.sma
+"C:\Program Files\Java\jdk-20\bin\java.exe" -jar "D:\github\lysis-java-karaulov\lysis-java.jar" %1 %1.sma
